@@ -40,9 +40,9 @@ class InvoiceApp {
         const printBtn = document.getElementById('printBtn');
         printBtn.addEventListener('click', () => this.printInvoice());
 
-         // Download button
-        const downloadBtn = document.getElementById('downloadBtn');
-        downloadBtn.addEventListener('click', () => this.downloadPDF());
+        //  // Download button
+        // const downloadBtn = document.getElementById('downloadBtn');
+        // downloadBtn.addEventListener('click', () => this.downloadPDF());
 
         // Add row button
         const addRowBtn = document.getElementById('addRowBtn');
@@ -410,65 +410,65 @@ class InvoiceApp {
         }, 100);
     }
 
-    async downloadPDF() {
-    // Temporarily switch to view mode for clean PDF
-    const wasEditMode = this.isEditMode;
-    if (this.isEditMode) {
-        this.toggleMode();
-    }
+    // async downloadPDF() {
+    // // Temporarily switch to view mode for clean PDF
+    // const wasEditMode = this.isEditMode;
+    // if (this.isEditMode) {
+    //     this.toggleMode();
+    // }
     
-    try {
-        // Import jsPDF library dynamically
-        const { jsPDF } = window.jspdf;
+    // try {
+    //     // Import jsPDF library dynamically
+    //     const { jsPDF } = window.jspdf;
         
-        // Import html2canvas library dynamically  
-        const html2canvas = window.html2canvas;
+    //     // Import html2canvas library dynamically  
+    //     const html2canvas = window.html2canvas;
         
-        if (!jsPDF || !html2canvas) {
-            alert('PDF libraries not loaded. Please refresh the page and try again.');
-            return;
-        }
+    //     if (!jsPDF || !html2canvas) {
+    //         alert('PDF libraries not loaded. Please refresh the page and try again.');
+    //         return;
+    //     }
         
-        // Get the invoice container
-        const invoiceElement = document.querySelector('.invoice-container');
+    //     // Get the invoice container
+    //     const invoiceElement = document.querySelector('.invoice-container');
         
-        // Capture the invoice as canvas
-        const canvas = await html2canvas(invoiceElement, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: '#ffffff'
-        });
+    //     // Capture the invoice as canvas
+    //     const canvas = await html2canvas(invoiceElement, {
+    //         scale: 2,
+    //         useCORS: true,
+    //         allowTaint: true,
+    //         backgroundColor: '#ffffff'
+    //     });
         
-        // Create PDF
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgData = canvas.toDataURL('image/png');
+    //     // Create PDF
+    //     const pdf = new jsPDF('p', 'mm', 'a4');
+    //     const imgData = canvas.toDataURL('image/png');
         
-        // Calculate dimensions to fit A4
-        const imgWidth = 210; // A4 width in mm
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    //     // Calculate dimensions to fit A4
+    //     const imgWidth = 210; // A4 width in mm
+    //     const imgHeight = (canvas.height * imgWidth) / canvas.width;
         
-        // Add image to PDF
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+    //     // Add image to PDF
+    //     pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
         
-        // Generate filename with invoice number and date
-        const invoiceNumber = document.getElementById('invoiceNumber').value || 'INV002';
-        const today = new Date().toISOString().split('T')[0];
-        const filename = `Invoice_${invoiceNumber}_${today}.pdf`;
+    //     // Generate filename with invoice number and date
+    //     const invoiceNumber = document.getElementById('invoiceNumber').value || 'INV002';
+    //     const today = new Date().toISOString().split('T')[0];
+    //     const filename = `Invoice_${invoiceNumber}_${today}.pdf`;
         
-        // Download the PDF
-        pdf.save(filename);
+    //     // Download the PDF
+    //     pdf.save(filename);
         
-    } catch (error) {
-        console.error('Error generating PDF:', error);
-        alert('Error generating PDF. Please try again.');
-    } finally {
-        // Restore original mode
-        if (wasEditMode) {
-            this.toggleMode();
-        }
-    }
-    }
+    // } catch (error) {
+    //     console.error('Error generating PDF:', error);
+    //     alert('Error generating PDF. Please try again.');
+    // } finally {
+    //     // Restore original mode
+    //     if (wasEditMode) {
+    //         this.toggleMode();
+    //     }
+    // }
+    // }
 
 
     setupPagination() {
