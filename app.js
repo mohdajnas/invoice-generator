@@ -41,8 +41,8 @@ class InvoiceApp {
         printBtn.addEventListener('click', () => this.printInvoice());
 
         //  // Download button
-        // const downloadBtn = document.getElementById('downloadBtn');
-        // downloadBtn.addEventListener('click', () => this.downloadPDF());
+        const downloadBtn = document.getElementById('downloadBtn');
+        downloadBtn.addEventListener('click', () => this.downloadPDF());
 
         // Add row button
         const addRowBtn = document.getElementById('addRowBtn');
@@ -410,65 +410,66 @@ class InvoiceApp {
         }, 100);
     }
 
-    // async downloadPDF() {
-    // // Temporarily switch to view mode for clean PDF
-    // const wasEditMode = this.isEditMode;
-    // if (this.isEditMode) {
-    //     this.toggleMode();
-    // }
-    
-    // try {
-    //     // Import jsPDF library dynamically
-    //     const { jsPDF } = window.jspdf;
-        
-    //     // Import html2canvas library dynamically  
-    //     const html2canvas = window.html2canvas;
-        
-    //     if (!jsPDF || !html2canvas) {
-    //         alert('PDF libraries not loaded. Please refresh the page and try again.');
-    //         return;
-    //     }
-        
-    //     // Get the invoice container
-    //     const invoiceElement = document.querySelector('.invoice-container');
-        
-    //     // Capture the invoice as canvas
-    //     const canvas = await html2canvas(invoiceElement, {
-    //         scale: 2,
-    //         useCORS: true,
-    //         allowTaint: true,
-    //         backgroundColor: '#ffffff'
-    //     });
-        
-    //     // Create PDF
-    //     const pdf = new jsPDF('p', 'mm', 'a4');
-    //     const imgData = canvas.toDataURL('image/png');
-        
-    //     // Calculate dimensions to fit A4
-    //     const imgWidth = 210; // A4 width in mm
-    //     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-    //     // Add image to PDF
-    //     pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-        
-    //     // Generate filename with invoice number and date
-    //     const invoiceNumber = document.getElementById('invoiceNumber').value || 'INV002';
-    //     const today = new Date().toISOString().split('T')[0];
-    //     const filename = `Invoice_${invoiceNumber}_${today}.pdf`;
-        
-    //     // Download the PDF
-    //     pdf.save(filename);
-        
-    // } catch (error) {
-    //     console.error('Error generating PDF:', error);
-    //     alert('Error generating PDF. Please try again.');
-    // } finally {
-    //     // Restore original mode
-    //     if (wasEditMode) {
-    //         this.toggleMode();
-    //     }
-    // }
-    // }
+    async downloadPDF() {
+    // Switch to view mode for clean export
+    const wasEditMode = this.isEditMode;
+    if (this.isEditMode) {
+        this.toggleMode();
+    }
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const html2canvas = window.html2canvas;
+
+        if (!jsPDF || !html2canvas) {
+            alert('PDF libraries not loaded. Please refresh the page and try again.');
+            return;
+        }
+
+        const invoiceElement = document.querySelector('.invoice-container');
+        // Use higher dpi for good quality
+        const canvas = await html2canvas(invoiceElement, { scale: 2, useCORS: true, backgroundColor: '#fff' });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+
+        // A4 size in pixels at html2canvas default 96dpi: (approx)
+        const pdfWidth = 210;
+        const pdfHeight = 297;
+        const imgWidth = pdfWidth;
+        const pageHeightPx = Math.floor(pdf.internal.pageSize.getHeight() * (canvas.width / pdf.internal.pageSize.getWidth()));
+        let position = 0;
+        let pageCount = 0;
+
+        // Split and add each page
+        while (position < canvas.height) {
+            // Create canvas slice for the current page
+            const pageCanvas = document.createElement('canvas');
+            pageCanvas.width = canvas.width;
+            pageCanvas.height = Math.min(pageHeightPx, canvas.height - position);
+            const ctx = pageCanvas.getContext('2d');
+            ctx.drawImage(canvas, 0, position, canvas.width, pageCanvas.height, 0, 0, canvas.width, pageCanvas.height);
+
+            const pageImgData = pageCanvas.toDataURL('image/png');
+            if (pageCount > 0) pdf.addPage();
+            pdf.addImage(pageImgData, 'PNG', 0, 0, imgWidth, imgWidth * (pageCanvas.height / canvas.width));
+            position += pageHeightPx;
+            pageCount += 1;
+        }
+
+        // File name setup
+        const invoiceNumber = document.getElementById('invoiceNumber')?.value || 'INV002';
+        const today = new Date().toISOString().split('T')[0];
+        const filename = `Invoice_${invoiceNumber}_${today}.pdf`;
+
+        pdf.save(filename);
+
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Error generating PDF. Please try again.');
+    } finally {
+        if (wasEditMode) this.toggleMode();
+    }
+}
 
 
     setupPagination() {
