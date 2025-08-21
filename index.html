@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice-BOEHM TECH LLP</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+</head>
+<body>
+    <div class="app-container">
+        <div class="mode-toggle">
+            <button id="toggleMode" class="toggle-btn">Switch to Edit Mode</button>
+            <div class="action-buttons">
+                <button id="downloadBtn" class="print-btn">Download PDF</button>
+                <button id="printBtn" class="print-btn">Print Invoice</button>
+            </div>
+        </div>
+
+        
+        <div class="invoice-container" id="invoiceContainer">
+            <div class="page" id="page1">
+                <!-- Company Header -->
+                <div class="company-header">
+                    <div class="company-details">
+                        <h1 class="company-name">BOEHM TECH LLP</h1>
+                        <div class="company-address">
+                            <div>Hilite Business Park</div>
+                            <div>Calicut</div>
+                            <div>673014</div>
+                            <div>7356777841</div>
+                            <div>info@boehmtech.co</div>
+                        </div>
+                    </div>
+                    <div class="logo-section">
+                        <div class="logo-placeholder">
+                            <img src="logo.png" alt="Company Logo">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Invoice Heading -->
+                <div class="invoice-heading">
+                    <h2>INVOICE</h2>
+                </div>
+
+                <!-- Invoice Metadata -->
+                <div class="invoice-metadata">
+                    <div class="metadata-row">
+                        <div class="metadata-item">
+                            <label class="field-label">INVOICE NUMBER:</label>
+                            <span class="field-value">
+                                <input type="text" id="invoiceNumber" value="INV002" class="edit-field" readonly>
+                                <span class="view-text">INV002</span>
+                            </span>
+                        </div>
+                        <div class="metadata-item">
+                            <label class="field-label">DATE:</label>
+                            <span class="field-value">
+                                <input type="date" id="invoiceDate" value="2025-08-22" class="edit-field" readonly>
+                                <span class="view-text">22-08-2025</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="metadata-row">
+                        <div class="metadata-item">
+                            <label class="field-label">DUE DATE:</label>
+                            <span class="field-value">
+                                <input type="date" id="dueDate" class="edit-field" readonly>
+                                <span class="view-text">-</span>
+                            </span>
+                        </div>
+                        <div class="metadata-item">
+                            <label class="field-label">BALANCE DUE:</label>
+                            <span class="field-value balance-due">
+                                <span id="balanceDueDisplay">₹0.00</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bill To Section -->
+                <div class="bill-to-section">
+                    <h3 class="section-title">BILL TO</h3>
+                    <div class="client-details">
+                        <div class="field-group">
+                            <label class="field-label">CLIENT NAME:</label>
+                            <input type="text" id="clientName" placeholder="Enter client name" class="edit-field" readonly>
+                            <span class="view-text" id="clientNameView">-</span>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">ADDRESS:</label>
+                            <textarea id="clientAddress" placeholder="Enter client address" class="edit-field" rows="3" readonly></textarea>
+                            <div class="view-text" id="clientAddressView">-</div>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">CONTACT:</label>
+                            <input type="text" id="clientContact" placeholder="Enter contact details" class="edit-field" readonly>
+                            <span class="view-text" id="clientContactView">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <div class="items-section">
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th>DESCRIPTION</th>
+                                <th>RATE</th>
+                                <th>QTY</th>
+                                <th>AMOUNT</th>
+                                <th class="edit-only">ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsTableBody">
+                            <tr class="item-row" data-row="0">
+                                <td>
+                                    <input type="text" class="item-description edit-field" placeholder="Enter description" readonly>
+                                    <span class="view-text item-description-view">-</span>
+                                </td>
+                                <td>
+                                    <input type="number" class="item-rate edit-field" step="0.01" min="0" placeholder="0.00" readonly>
+                                    <span class="view-text item-rate-view">₹0.00</span>
+                                </td>
+                                <td>
+                                    <input type="number" class="item-qty edit-field" min="1" value="1" readonly>
+                                    <span class="view-text item-qty-view">1</span>
+                                </td>
+                                <td class="item-amount">₹0.00</td>
+                                <td class="edit-only">
+                                    <button class="remove-row-btn" onclick="removeRow(0)">×</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button id="addRowBtn" class="add-row-btn edit-only">+ Add Row</button>
+                </div>
+
+                <!-- GST Controls -->
+                <div class="gst-controls edit-only">
+                    <div class="gst-checkbox-group">
+                        <input type="checkbox" id="gstEnabled" class="gst-checkbox">
+                        <label for="gstEnabled" class="gst-label">Include GST</label>
+                    </div>
+                    <div class="gst-percentage-group" id="gstPercentageGroup" style="display: none;">
+                        <label class="field-label">GST PERCENTAGE:</label>
+                        <input type="number" id="gstPercentage" value="18" min="0" max="100" step="0.01" class="edit-field gst-input">
+                        <span>%</span>
+                    </div>
+                </div>
+
+                <!-- Totals Section -->
+                <div class="totals-section">
+                    <div class="totals-row">
+                        <label>SUBTOTAL:</label>
+                        <span id="subtotalAmount">₹0.00</span>
+                    </div>
+                    <div class="totals-row gst-row" id="gstAmountRow" style="display: none;">
+                        <label>GST AMOUNT (<span id="gstPercentageDisplay">18</span>%):</label>
+                        <span id="gstAmount">₹0.00</span>
+                    </div>
+                    <div class="totals-row total-row">
+                        <label>TOTAL:</label>
+                        <span id="totalAmount">₹0.00</span>
+                    </div>
+                    <div class="totals-row">
+                        <label>RECEIVED AMOUNT:</label>
+                        <span class="field-value">
+                            <input type="number" id="receivedAmount" step="0.01" min="0" placeholder="0.00" class="edit-field" readonly>
+                            <span class="view-text" id="receivedAmountView">₹0.00</span>
+                        </span>
+                    </div>
+                    <div class="totals-row balance-due-row">
+                        <label>BALANCE DUE:</label>
+                        <span id="finalBalanceDue">₹0.00</span>
+                    </div>
+                </div>
+
+                <!-- Signature Section -->
+                <div class="signature-section">
+                    <div class="signature-upload edit-only">
+                        <label class="field-label">SIGNATURE:</label>
+                        <input type="file" id="signatureUpload" accept="image/*" class="edit-field">
+                        <div class="upload-help">Upload signature here</div>
+                    </div>
+                    <div class="signature-display">
+                        <div class="signature-label">SEAL</div>
+                        <div class="signature-area" id="signatureArea">
+                            <img id="signatureImage" src="" alt="" style="display: none;">
+                            <div class="signature-placeholder view-only">_________________</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
