@@ -287,54 +287,67 @@ class InvoiceApp {
         console.log(`Row ${rowIndex}: Rate=${rate}, Qty=${qty}, Amount=${amount}`);
     }
 
+        // Replace the updateCalculations() method in your app.js with this fixed version
+    
     updateCalculations() {
         let subtotal = 0;
-        
+    
         document.querySelectorAll('.item-row').forEach((row, index) => {
             const rateValue = row.querySelector('.item-rate').value;
             const qtyValue = row.querySelector('.item-qty').value;
-            
+    
             const rate = parseFloat(rateValue) || 0;
             const qty = parseInt(qtyValue) || 1;
-            
-            // Ensure both values are valid numbers before calculation
+    
             const amount = isNaN(rate) || isNaN(qty) ? 0 : rate * qty;
-            
-            // Update the row amount display
+    
             row.querySelector('.item-amount').textContent = this.formatCurrency(amount);
-            
-            // Add to subtotal
             subtotal += amount;
-            
-            // Debug logging
-            console.log(`Calculation - Row ${index}: Rate=${rate}, Qty=${qty}, Amount=${amount}, Subtotal so far=${subtotal}`);
         });
-
-        // Update subtotal display
+    
+        // Update subtotal
         document.getElementById('subtotalAmount').textContent = this.formatCurrency(subtotal);
-
-        // Calculate GST if enabled
+    
+        // GST & Total
         let gstAmount = 0;
         let total = subtotal;
-
+    
         if (this.gstEnabled) {
             gstAmount = (subtotal * this.gstPercentage) / 100;
             total = subtotal + gstAmount;
-            
-            // Update GST displays
+    
             document.getElementById('gstAmount').textContent = this.formatCurrency(gstAmount);
-            document.getElementById('gstPercentageDisplay').textContent = this.gstPercentage;
+            document.getElementById('gstAmountRow').style.display = '';
+        } else {
+            document.getElementById('gstAmount').textContent = this.formatCurrency(0);
+            document.getElementById('gstAmountRow').style.display = 'none';
         }
-
-        const receivedAmount = parseFloat(document.getElementById('receivedAmount').value) || 0;
-        const balanceDue = total - receivedAmount;
-
-        // Update displays
+    
+        // Update Total
         document.getElementById('totalAmount').textContent = this.formatCurrency(total);
-        document.getElementById('finalBalanceDue').textContent = this.formatCurrency(balanceDue);
-        document.getElementById('balanceDueDisplay').textContent = this.formatCurrency(balanceDue);
+    
+        // 🔧 FIX: Get received amount from the correct input element
+        const receivedInput = document.getElementById('receivedAmount');
+        const receivedValue = receivedInput ? parseFloat(receivedInput.value) || 0 : 0;
         
-        console.log(`Final totals: Subtotal=${subtotal}, GST=${gstAmount}, Total=${total}, Received=${receivedAmount}, Balance=${balanceDue}`);
+        // Update received amount display
+        document.getElementById('receivedAmountView').textContent = this.formatCurrency(receivedValue);
+    
+        // 🔧 FIX: Calculate balance correctly and update multiple elements
+        const balanceDue = total - receivedValue;
+        
+        // Update all balance due display elements
+        const balanceElements = [
+            'balanceDueDisplay',  // Top metadata section
+            'finalBalanceDue'     // Totals section
+        ];
+        
+        balanceElements.forEach(elementId => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = this.formatCurrency(balanceDue);
+            }
+        });
     }
 
     handleSignatureUpload(event) {
